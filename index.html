@@ -131,6 +131,9 @@
       currentRound = [...allCandidates];
       document.getElementById('setup').classList.add('hidden');
       document.getElementById('battle').classList.remove('hidden');
+      requestAnimationFrame(() => {
+        document.getElementById('battle').scrollIntoView({ behavior: 'smooth' });
+      });
       index = 0;
       showBattle();
     }
