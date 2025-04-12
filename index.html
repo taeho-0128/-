@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>이상형 월드컵</title>
+  <title>Ideal Type Worldcup</title>
   <style>
     body { margin: 0; font-family: sans-serif; text-align: center; }
     .hidden { display: none; }
@@ -40,12 +40,11 @@
   </style>
 </head>
 <body>
-  <!-- 게임 세팅 페이지 -->
   <section id="setup" class="setup">
     <h1>이상형 월드컵 시작하기</h1>
     <label>
       참가 인원 수:
-      <select id="playerCount" onchange="renderEntryForm()">
+      <select id="playerCount">
         <option value="8">8명</option>
         <option value="16">16명</option>
         <option value="32">32명</option>
@@ -57,7 +56,6 @@
     <button onclick="startGame()">시작하기</button>
   </section>
 
-  <!-- 대결 페이지 -->
   <section id="battle" class="full-screen hidden">
     <div class="match-info" id="matchInfo"></div>
     <div class="battle-area">
@@ -71,10 +69,8 @@
         <div id="rightName"></div>
       </div>
     </div>
-    </div>
   </section>
 
-  <!-- 결과 페이지 -->
   <section id="result" class="winner-fullscreen hidden">
     <div id="winner"></div>
     <br>
@@ -106,8 +102,15 @@
       const reader = new FileReader();
       reader.onload = function(e) {
         document.getElementById(`name_${index}`).dataset.img = e.target.result;
-      }
+      };
       if (fileInput.files[0]) reader.readAsDataURL(fileInput.files[0]);
+    }
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
     }
 
     function startGame() {
@@ -123,28 +126,37 @@
         }
         list.push(img ? `${name}:${img}` : name);
       }
-
       savedEntries = [...list];
       localStorage.setItem('entryList', JSON.stringify(savedEntries));
-      // shuffle(list);  // 순서를 섞지 않음
-      allCandidates = [...list];
+      const shuffled = [...list];
+      shuffle(shuffled);
+      allCandidates = [...shuffled];
       currentRound = [...allCandidates];
+      nextRound = [];
+      index = 0;
       document.getElementById('setup').classList.add('hidden');
       document.getElementById('battle').classList.remove('hidden');
       requestAnimationFrame(() => {
         document.getElementById('battle').scrollIntoView({ behavior: 'smooth' });
       });
-      index = 0;
+      showBattle();
+    }
+
+    function choose(winnerIndex) {
+      const winner = currentRound[index + winnerIndex];
+      nextRound.push(winner);
+      index += 2;
       showBattle();
     }
 
     function getRoundText(count) {
-      if (count === 2) return "결승";
-      else if (count === 4) return "4강";
-      else if (count === 8) return "8강";
-      else if (count === 16) return "16강";
-      else if (count === 32) return "32강";
-            return `${count}강`;
+      const totalMatches = Math.ceil(count / 2);
+      if (totalMatches === 1) return "결승";
+      if (totalMatches === 2) return "4강";
+      if (totalMatches === 4) return "8강";
+      if (totalMatches === 8) return "16강";
+      if (totalMatches === 16) return "32강";
+      return `${totalMatches * 2}강`;
     }
 
     function showBattle() {
@@ -162,7 +174,7 @@
       }
 
       if (index >= currentRound.length) {
-        currentRound = nextRound;
+        currentRound = [...nextRound];
         nextRound = [];
         index = 0;
         showBattle();
@@ -201,13 +213,6 @@
       }
     }
 
-    function choose(winnerIndex) {
-      const winner = currentRound[index + winnerIndex];
-      nextRound.push(winner);
-      index += 2;
-      showBattle();
-    }
-
     function restart() {
       document.getElementById('result').classList.add('hidden');
       document.getElementById('setup').classList.remove('hidden');
@@ -225,30 +230,8 @@
       }
     }
 
-    function shuffle(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-    }
-
     document.addEventListener('DOMContentLoaded', () => {
-      const storedEntries = localStorage.getItem('entryList');
-      if (storedEntries) {
-        const parsed = JSON.parse(storedEntries);
-        const playerCountSelect = document.getElementById('playerCount');
-        if (playerCountSelect) {
-          playerCountSelect.value = parsed.length;
-        }
-        renderEntryForm();
-        for (let i = 0; i < parsed.length; i++) {
-          const [name, img] = parsed[i].split(":");
-          const input = document.getElementById(`name_${i}`);
-          if (input) input.value = name;
-          if (img) input.dataset.img = img;
-        }
-        return;
-      }
+      document.getElementById('playerCount').addEventListener('change', renderEntryForm);
       renderEntryForm();
     });
   </script>
