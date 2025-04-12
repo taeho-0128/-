@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>이상형 월드컵</title>
+  <style>
+    body { margin: 0; font-family: sans-serif; text-align: center; }
+    .hidden { display: none; }
+    .full-screen { width: 100vw; height: 100vh; display: flex; flex-direction: column; }
+    .match-info { height: 50px; display: flex; align-items: center; justify-content: center; font-size: 20px; background: #f0f0f0; animation: fadeIn 0.5s ease-in; }
+    .battle-area { flex: 1; display: flex; }
+    .half { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; border: 1px solid #ccc; transition: background-color 0.3s; }
+    .half:hover { background-color: #f9f9f9; }
+    .setup { padding: 20px; }
+    .entry-row { margin: 8px 0; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .entry-row input[type="text"] { width: 200px; padding: 4px; }
+    .winner-fullscreen { display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 48px; font-weight: bold; height: 100vh; background-color: #ffecec; animation: fadeIn 1s ease-in; }
+    .image-preview { width: 100px; height: 100px; object-fit: cover; border-radius: 10px; margin-bottom: 10px; }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="setup" id="setup">
+    <h1>이상형 월드컵 시작하기</h1>
+    <label>
+      참가 인원 수:
+      <select id="playerCount" onchange="renderEntryForm()">
+        <option value="8">8명</option>
+        <option value="16">16명</option>
+        <option value="32">32명</option>
+      </select>
+    </label>
+    <br><br>
+    <div id="entryForm"></div>
+    <br>
+    <button onclick="startGame()">시작하기</button>
+  </div>
+
+  <div class="full-screen hidden" id="battle">
+    <div class="match-info" id="matchInfo"></div>
+    <div class="battle-area">
+      <div class="half" id="left" onclick="choose(0)">
+        <img id="leftImg" class="image-preview hidden" />
+        <div id="leftName"></div>
+      </div>
+      <div class="half" id="right" onclick="choose(1)">
+        <img id="rightImg" class="image-preview hidden" />
+        <div id="rightName"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="winner-fullscreen hidden" id="result">
+    <div id="winner"></div>
+    <br>
+    <button onclick="restart()">다시 시작</button>
+  </div>
+
+  <script>
+    let allCandidates = [];
+    let currentRound = [];
+    let nextRound = [];
+    let index = 0;
+    let savedEntries = [];
+
+    function renderEntryForm() {
+      const count = parseInt(document.getElementById('playerCount').value);
+      const container = document.getElementById('entryForm');
+      container.innerHTML = '';
+      for (let i = 0; i < count; i++) {
+        container.innerHTML += `
+          <div class="entry-row">
+            이름 ${i + 1}: <input type="text" id="name_${i}" placeholder="이름 입력" />
+            <input type="file" id="img_${i}" accept="image/*" onchange="encodeImage(${i})" />
+          </div>`;
+      }
+    }
+
+    function encodeImage(index) {
+      const fileInput = document.getElementById(`img_${index}`);
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById(`name_${index}`).dataset.img = e.target.result;
+      }
+      if (fileInput.files[0]) reader.readAsDataURL(fileInput.files[0]);
+    }
+
+    function startGame() {
+      const count = parseInt(document.getElementById('playerCount').value);
+      let list = [];
+      for (let i = 0; i < count; i++) {
+        const nameInput = document.getElementById(`name_${i}`);
+        const name = nameInput.value.trim();
+        const img = nameInput.dataset.img || '';
+        if (!name) {
+          alert(`${i + 1}번째 참가자 이름을 입력하세요.`);
+          return;
+        }
+        list.push(img ? `${name}:${img}` : name);
+      }
+      savedEntries = list;
+      shuffle(list);
+      allCandidates = [...list];
+      currentRound = [...allCandidates];
+      document.getElementById('setup').classList.add('hidden');
+      document.getElementById('battle').classList.remove('hidden');
+      index = 0;
+      showBattle();
+    }
+
+    function getRoundText(count) {
+      if (count === 2) return "결승";
+      else if (count === 4) return "4강";
+      else if (count === 8) return "8강";
+      else if (count === 16) return "16강";
+      else if (count === 32) return "32강";
+      return `${count}강`;
+    }
+
+    function showBattle() {
+      if (currentRound.length === 1) {
+        const finalEntry = currentRound[0] || "";
+        const [finalName] = finalEntry.split(":");
+        document.getElementById('battle').classList.add('hidden');
+        document.getElementById('result').classList.remove('hidden');
+        document.getElementById('winner').textContent = `🏆 최종 우승자: ${finalName} 🏆`;
+        return;
+      }
+
+      if (index >= currentRound.length) {
+        currentRound = nextRound;
+        nextRound = [];
+        index = 0;
+        showBattle();
+        return;
+      }
+
+      const left = currentRound[index] || "";
+      const right = currentRound[index + 1] || "";
+
+      const roundText = getRoundText(currentRound.length);
+      const matchNumber = index / 2 + 1;
+      const totalMatches = currentRound.length / 2;
+      document.getElementById('matchInfo').textContent = `${roundText} (${matchNumber}/${totalMatches})`;
+
+      const [leftName, leftImg] = left.split(":");
+      const [rightName, rightImg] = right.split(":");
+
+      document.getElementById('leftName').textContent = leftName || "";
+      document.getElementById('rightName').textContent = rightName || "";
+
+      const leftImgTag = document.getElementById('leftImg');
+      const rightImgTag = document.getElementById('rightImg');
+
+      if (leftImg) {
+        leftImgTag.src = leftImg;
+        leftImgTag.classList.remove('hidden');
+      } else {
+        leftImgTag.classList.add('hidden');
+      }
+
+      if (rightImg) {
+        rightImgTag.src = rightImg;
+        rightImgTag.classList.remove('hidden');
+      } else {
+        rightImgTag.classList.add('hidden');
+      }
+    }
+
+    function choose(winnerIndex) {
+      const winner = currentRound[index + winnerIndex];
+      nextRound.push(winner);
+      index += 2;
+      showBattle();
+    }
+
+    function restart() {
+      document.getElementById('result').classList.add('hidden');
+      document.getElementById('setup').classList.remove('hidden');
+      renderEntryForm();
+      const count = savedEntries.length;
+      for (let i = 0; i < count; i++) {
+        const [name, img] = savedEntries[i].split(":");
+        document.getElementById(`name_${i}`).value = name;
+        if (img) {
+          document.getElementById(`name_${i}`).dataset.img = img;
+        }
+      }
+    }
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderEntryForm();
+    });
+  </script>
+</body>
+</html>
