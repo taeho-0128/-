@@ -125,7 +125,7 @@
         list.push(img ? `${name}:${img}` : name);
       }
       savedEntries = list;
-      shuffle(list);
+      // shuffle(list);  // 순서를 섞지 않음
       allCandidates = [...list];
       currentRound = [...allCandidates];
       document.getElementById('setup').classList.add('hidden');
@@ -140,11 +140,11 @@
       else if (count === 8) return "8강";
       else if (count === 16) return "16강";
       else if (count === 32) return "32강";
-      return `${count}강`;
+            return `${count}강`;
     }
 
     function showBattle() {
-      if (currentRound.length === 1) {
+      if (currentRound.length === 2 && index >= currentRound.length) {
         const finalEntry = currentRound[0] || "";
         const [finalName] = finalEntry.split(":");
         document.getElementById('battle').classList.add('hidden');
@@ -169,8 +169,8 @@
       const right = currentRound[index + 1] || "";
 
       const roundText = getRoundText(currentRound.length);
-      const matchNumber = index / 2 + 1;
-      const totalMatches = currentRound.length / 2;
+      const matchNumber = Math.ceil(index / 2 + 1);
+      const totalMatches = Math.ceil(currentRound.length / 2);
       document.getElementById('matchInfo').textContent = `${roundText} (${matchNumber}/${totalMatches})`;
 
       const [leftName, leftImg] = left.split(":");
