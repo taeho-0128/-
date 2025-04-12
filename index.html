@@ -130,6 +130,7 @@
         const finalEntry = currentRound[0] || "";
         const [finalName] = finalEntry.split(":");
         document.getElementById('battle').classList.add('hidden');
+        document.getElementById('setup').classList.add('hidden');
         document.getElementById('result').classList.remove('hidden');
         document.getElementById('winner').textContent = `🏆 최종 우승자: ${finalName} 🏆`;
         setTimeout(() => {
