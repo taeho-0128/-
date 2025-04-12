@@ -24,7 +24,8 @@
   </style>
 </head>
 <body>
-  <div class="setup" id="setup">
+  <!-- 게임 세팅 페이지 -->
+  <section id="setup" class="setup">
     <h1>이상형 월드컵 시작하기</h1>
     <label>
       참가 인원 수:
@@ -38,9 +39,10 @@
     <div id="entryForm"></div>
     <br>
     <button onclick="startGame()">시작하기</button>
-  </div>
+  </section>
 
-  <div class="full-screen hidden" id="battle">
+  <!-- 대결 페이지 -->
+  <section id="battle" class="full-screen hidden">
     <div class="match-info" id="matchInfo"></div>
     <div class="battle-area">
       <div class="half" id="left" onclick="choose(0)">
@@ -52,13 +54,14 @@
         <div id="rightName"></div>
       </div>
     </div>
-  </div>
+  </section>
 
-  <div class="winner-fullscreen hidden" id="result">
+  <!-- 결과 페이지 -->
+  <section id="result" class="winner-fullscreen hidden">
     <div id="winner"></div>
     <br>
     <button onclick="restart()">다시 시작</button>
-  </div>
+  </section>
 
   <script>
     let allCandidates = [];
@@ -90,6 +93,7 @@
     }
 
     function startGame() {
+      localStorage.setItem('entryList', JSON.stringify(savedEntries));
       const count = parseInt(document.getElementById('playerCount').value);
       let list = [];
       for (let i = 0; i < count; i++) {
@@ -128,6 +132,7 @@
         document.getElementById('battle').classList.add('hidden');
         document.getElementById('result').classList.remove('hidden');
         document.getElementById('winner').textContent = `🏆 최종 우승자: ${finalName} 🏆`;
+        window.scrollTo({ top: document.getElementById('result').offsetTop, behavior: 'smooth' });
         return;
       }
 
@@ -181,6 +186,7 @@
     function restart() {
       document.getElementById('result').classList.add('hidden');
       document.getElementById('setup').classList.remove('hidden');
+      window.scrollTo({ top: document.getElementById('setup').offsetTop, behavior: 'smooth' });
       renderEntryForm();
       const count = savedEntries.length;
       for (let i = 0; i < count; i++) {
@@ -200,6 +206,22 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+      const storedEntries = localStorage.getItem('entryList');
+      if (storedEntries) {
+        const parsed = JSON.parse(storedEntries);
+        const playerCountSelect = document.getElementById('playerCount');
+        if (playerCountSelect) {
+          playerCountSelect.value = parsed.length;
+        }
+        renderEntryForm();
+        for (let i = 0; i < parsed.length; i++) {
+          const [name, img] = parsed[i].split(":");
+          const input = document.getElementById(`name_${i}`);
+          if (input) input.value = name;
+          if (img) input.dataset.img = img;
+        }
+        return;
+      }
       renderEntryForm();
     });
   </script>
