@@ -9,14 +9,16 @@
     .hidden { display: none; }
     .full-screen { width: 100vw; height: 100vh; display: flex; flex-direction: column; }
     .match-info { height: 50px; display: flex; align-items: center; justify-content: center; font-size: 20px; background: #f0f0f0; animation: fadeIn 0.5s ease-in; }
-    .battle-area { flex: 1; display: flex; }
-    .half { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; border: 1px solid #ccc; transition: background-color 0.3s; }
+    .battle-area { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 10px; padding: 10px; }
+    .half { width: 90%; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; border: 1px solid #ccc; transition: background-color 0.3s; border-radius: 10px; background-color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
     .half:hover { background-color: #f9f9f9; }
+    .vs-text { font-size: 32px; font-weight: bold; margin: 10px 0; }
     .setup { padding: 20px; }
-    .entry-row { margin: 8px 0; display: flex; align-items: center; justify-content: center; gap: 10px; }
-    .entry-row input[type="text"] { width: 200px; padding: 4px; }
-    .winner-fullscreen { display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 48px; font-weight: bold; height: 100vh; background-color: #ffecec; animation: fadeIn 1s ease-in; }
-    .image-preview { width: 100px; height: 100px; object-fit: cover; border-radius: 10px; margin-bottom: 10px; }
+    .entry-row { margin: 12px 0; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .entry-row input[type="text"], .entry-row input[type="file"] { width: 90%; padding: 12px; font-size: 16px; }
+    button { font-size: 18px; padding: 12px 24px; margin-top: 16px; }
+    .winner-fullscreen { display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 32px; font-weight: bold; height: 100vh; background-color: #ffecec; animation: fadeIn 1s ease-in; padding: 20px; text-align: center; }
+    .image-preview { width: 120px; height: 120px; object-fit: cover; border-radius: 10px; margin-bottom: 10px; }
     @keyframes fadeIn {
       from { opacity: 0; }
       to { opacity: 1; }
@@ -48,6 +50,13 @@
       <div class="half" id="left" onclick="choose(0)">
         <img id="leftImg" class="image-preview hidden" />
         <div id="leftName"></div>
+      </div>
+      <div class="vs-text">VS</div>
+      <div class="half" id="right" onclick="choose(1)">
+        <img id="rightImg" class="image-preview hidden" />
+        <div id="rightName"></div>
+      </div>
+    </div>
       </div>
       <div class="half" id="right" onclick="choose(1)">
         <img id="rightImg" class="image-preview hidden" />
