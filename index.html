@@ -133,9 +133,9 @@
         document.getElementById('setup').classList.add('hidden');
         document.getElementById('result').classList.remove('hidden');
         document.getElementById('winner').textContent = `🏆 최종 우승자: ${finalName} 🏆`;
-        setTimeout(() => {
+        requestAnimationFrame(() => {
           document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
-        }, 50);
+        });
         return;
       }
 
@@ -189,9 +189,9 @@
     function restart() {
       document.getElementById('result').classList.add('hidden');
       document.getElementById('setup').classList.remove('hidden');
-      setTimeout(() => {
+      requestAnimationFrame(() => {
         document.getElementById('setup').scrollIntoView({ behavior: 'smooth' });
-      }, 50);
+      });
       renderEntryForm();
       const count = savedEntries.length;
       for (let i = 0; i < count; i++) {
